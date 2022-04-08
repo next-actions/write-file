@@ -1,0 +1,24 @@
+name: Write file
+inputs:
+  path:
+    description: Path to the file.
+    required: true
+  contents:
+    description: File contents.
+    required: true
+  working-directory:
+    description: Working directory.
+    required: false
+    default: '.'
+runs:
+  using: 'composite'
+  steps:
+  - name: Write to a file
+    shell: bash
+    run: |
+      pushd '${{ inputs.working-directory }}' &> /dev/null
+      cat <<EOF > "${{ inputs.path }}"
+      ${{ inputs.contents }}
+      EOF
+      truncate -s -1 "${{ inputs.path }}"
+      popd &> /dev/null

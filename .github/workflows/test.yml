@@ -1,0 +1,118 @@
+name: "Test"
+on:
+  push:
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Write single line
+      uses: ./
+      with:
+        path: test.log
+        contents: hello world
+
+    - name: Test single line
+      run: |
+        contents=`cat test.log`
+        echo "$contents"
+        if [ x"$contents" != x"hello world" ]; then
+          exit 1
+        fi
+
+    - name: Write multiline
+      uses: ./
+      with:
+        path: test.log
+        contents: |
+          hello
+          world
+
+    - name: Test multi line
+      run: |
+        contents=`cat test.log`
+        test=`echo -e hello\\\nworld\\\n`
+        echo "$contents"
+        if [ x"$contents" != x"$test" ]; then
+          exit 1
+        fi
+
+    - name: Write environment
+      uses: ./
+      env:
+        hello: hello
+        world: world
+      with:
+        path: test.log
+        contents: $hello $world
+
+    - name: Test environment
+      run: |
+        contents=`cat test.log`
+        echo "$contents"
+        if [ x"$contents" != x"hello world" ]; then
+          exit 1
+        fi
+
+    - name: Make test directory
+      run: |
+        mkdir test
+
+    - name: Write single line working directory
+      uses: ./
+      with:
+        working-directory: test
+        path: test.log
+        contents: hello world
+
+    - name: Test single line working directory
+      run: |
+        contents=`cat test/test.log`
+        echo "$contents"
+        if [ x"$contents" != x"hello world" ]; then
+          exit 1
+        fi
+
+    - name: Write multiline working directory
+      uses: ./
+      with:
+        working-directory: test
+        path: test.log
+        contents: |
+          hello
+          world
+
+    - name: Test multi line working directory
+      run: |
+        contents=`cat test/test.log`
+        test=`echo -e hello\\\nworld\\\n`
+        echo "$contents"
+        if [ x"$contents" != x"$test" ]; then
+          exit 1
+        fi
+
+    - name: Write environment working directory
+      uses: ./
+      env:
+        hello: hello
+        world: world
+      with:
+        working-directory: test
+        path: test.log
+        contents: $hello $world
+
+    - name: Test environment working directory
+      run: |
+        contents=`cat test/test.log`
+        echo "$contents"
+        if [ x"$contents" != x"hello world" ]; then
+          exit 1
+        fi
